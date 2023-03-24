@@ -1,0 +1,66 @@
+﻿@page "/user/{Id?}"
+@inject NavigationManager NavManager
+
+@using BlazorApp.BLL;
+@using BlazorApp.DAL.Models;
+@using static BlazorApp.DAL.Enums;
+
+<PageTitle>User</PageTitle>
+
+<h1>User</h1>
+<EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator />
+    <div class="row w-100 p-2">
+        <div class="col-md-6">
+            <MatTextField Class="w-100" @bind-Value="@user.FirstName" Label="First Name"></MatTextField>
+            <ValidationMessage For="@(() => @user.FirstName)" />
+        </div>
+        <div class="col-md-6">
+            <MatTextField Class="w-100" @bind-Value="@user.LastName" Label="Last Name"></MatTextField>
+            <ValidationMessage For="@(() => @user.LastName)" />
+        </div>
+    </div>
+    <div class="row w-100 p-2">
+        <div class="col-md-4">
+            <MatSelect Class="w-100" Label="Select Gender" @bind-Value="@user.Gender">
+                <MatOption TValue="int?" Value="@((int)Gender.Male)">@Gender.Male</MatOption>
+                <MatOption TValue="int?" Value="@((int)Gender.Female)">@Gender.Female</MatOption>
+                <MatOption TValue="int?" Value="@((int)Gender.NotAnswered)">Prefer Not to Answer</MatOption>
+            </MatSelect>
+            <ValidationMessage For="@(() => @user.Gender)" />
+        </div>
+        <div class="col-md-4">
+            <MatTextField Class="w-100" @bind-Value="@user.PhoneNumber" Label="Phone Number"></MatTextField>
+        </div>
+    </div>
+    <MatButton Raised="true" Type="submit">Submit</MatButton>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private EditContext? editContext;
+    private int currentCount = 0;
+    private User user = new();
+    private int? gender;
+    private UserService _userService = new UserService();
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(Id))
+            user = _userService.GetUser(Guid.Parse(Id));
+        editContext = new(user);
+
+    }
+
+    private void HandleSubmit()
+    {
+        if (user.Id == null)
+            _userService.CreateUser(user);
+        else 
+            _userService.UpdateUser(user);
+
+        NavManager.NavigateTo("/users");
+    }
+}

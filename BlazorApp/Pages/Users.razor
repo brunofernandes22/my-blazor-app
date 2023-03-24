@@ -1,0 +1,66 @@
+﻿@page "/"
+@page "/users"
+@inject NavigationManager NavManager
+@using BlazorApp.BLL;
+@using BlazorApp.DAL.Models;
+@using static BlazorApp.DAL.Enums;
+
+<style>
+   .fNameCol{
+       width: 30%;
+   }
+   .lNameCol{
+        width: 30%;
+   }
+</style>
+<PageTitle>Users</PageTitle>
+
+<h1>Users</h1>
+<MatTable Items="@users" class="mat-elevation-z5">
+    <MatTableHeader>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Gender</th>
+        <th >Edit</th>
+        <th >Delete</th>
+    </MatTableHeader>
+    <MatTableRow>
+        <td>@context.FirstName</td>
+        <td>@context.LastName</td>
+        <td>@Enum.GetName(typeof(Gender),@context.Gender)</td>
+        <td><MatIcon Style="cursor:pointer;" Icon="@MatIconNames.Create" onclick="@(() => onEdit(context.Id.GetValueOrDefault()))"></MatIcon></td>
+        <td><MatIcon Style="cursor:pointer;" Icon="@MatIconNames.Delete" onclick="@(() => onDelete(context.Id.GetValueOrDefault()))"></MatIcon></td>
+    </MatTableRow>
+</MatTable>
+<MatButton Raised=true OnClick="@CreateUser">Create User</MatButton>
+
+@code {
+    private UserService _userService = new UserService();
+    private List<User> users;
+
+    public Users (){
+        LoadData();
+    }
+
+    private void onEdit (Guid Id)
+    {
+        NavManager.NavigateTo($"/user/{Id}");
+    }
+
+    private void onDelete(Guid Id)
+    {
+        _userService.DeleteUser(Id);
+        LoadData();
+        StateHasChanged();
+    }
+
+    private void CreateUser()
+    {
+        NavManager.NavigateTo("/user");
+    }
+
+    private void LoadData()
+    {
+        users = _userService.GetAllUsers();
+    }
+}
